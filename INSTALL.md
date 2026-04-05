@@ -6,8 +6,10 @@
 
 ## Step 1: Create the Apps Script Project
 
-1. Go to [script.google.com](https://script.google.com)
-2. Click **"New project"**
+**Important:** Start from a Google Sheet so the script is attached to it.
+
+1. Open any Google Sheet (or create a new one)
+2. Go to **Extensions → Apps Script** — this opens the script editor
 3. Click the project name at the top left (it says "Untitled project") and rename it to **"File Prep"**
 
 ## Step 2: Add the Code Files
@@ -62,42 +64,21 @@ When you're done, your project should have these files in the sidebar:
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/script.container.ui",
     "https://www.googleapis.com/auth/userinfo.email"
-  ],
-  "addOns": {
-    "common": {
-      "name": "File Prep",
-      "logoUrl": "https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png",
-      "homepageTrigger": {
-        "runFunction": "onOpen"
-      }
-    },
-    "sheets": {
-      "onOpenTrigger": {
-        "runFunction": "onOpen"
-      }
-    },
-    "docs": {
-      "onOpenTrigger": {
-        "runFunction": "onOpen"
-      }
-    }
-  }
+  ]
 }
 ```
-
-(Adjust the `timeZone` if you're not on the US East Coast.)
 
 ## Step 4: Test It
 
 1. Save all files (Ctrl+S / Cmd+S)
-2. Click **"Run"** at the top and select the `onOpen` function
-3. The first time, Google will ask you to authorize the script. Click through:
+2. Go back to your Google Sheet tab and **reload the page**
+3. After a few seconds, look for **Extensions → File Prep** in the menu bar
+4. Click **Open sidebar** — the first time, Google will ask you to authorize:
    - "Review Permissions"
    - Choose your account
    - If you see "Google hasn't verified this app," click "Advanced" → "Go to File Prep (unsafe)" — this is normal for personal scripts
    - Click "Allow"
-4. Open any Google Sheet
-5. Go to **Extensions → File Prep → Open sidebar**
+5. The sidebar should appear on the right side of the sheet
 6. The sidebar should appear on the right side
 
 ## Step 5: Deploy as an Add-on (Optional — for Convenience)
