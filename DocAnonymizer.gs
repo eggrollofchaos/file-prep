@@ -134,6 +134,9 @@ function anonymizeDoc(config) {
   var copy = file.makeCopy(doc.getName() + " - Prepped");
   var copyDoc = DocumentApp.openById(copy.getId());
 
+  // Mark the copy so restore can verify it without relying on filename
+  copy.setDescription((copy.getDescription() || "") + "\n[FILE_PREP_PREPPED]");
+
   var stats = { replacements: 0, termsFound: 0 };
 
   // Build replacement list from de-duplicated entries
@@ -198,11 +201,13 @@ function restoreDoc(config) {
   config = config || {};
   var doc = DocumentApp.getActiveDocument();
 
-  // Safety: verify this is a prepped copy
-  if (doc.getName().indexOf(" - Prepped") === -1) {
+  // Safety: verify this is a prepped copy (check marker first, filename as fallback)
+  var file = DriveApp.getFileById(doc.getId());
+  var desc = file.getDescription() || "";
+  if (desc.indexOf("[FILE_PREP_PREPPED]") === -1 && doc.getName().indexOf(" - Prepped") === -1) {
     return {
       success: false,
-      error: "This document doesn't appear to be a prepped copy. Restore only works on files with ' - Prepped' in the name."
+      error: "This document was not created by File Prep. Restore only works on prepped copies."
     };
   }
 

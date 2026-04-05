@@ -173,6 +173,8 @@ function anonymizeSheet(config) {
 
   // 1. Create a copy of the entire spreadsheet
   var copy = ss.copy(ss.getName() + " - Prepped");
+  var copyFile = DriveApp.getFileById(copy.getId());
+  copyFile.setDescription((copyFile.getDescription() || "") + "\n[FILE_PREP_PREPPED]");
   var copySheet = copy.getSheetByName(sheetName);
 
   // 2. Load mappings for the specified domain
@@ -260,11 +262,13 @@ function anonymizeSheet(config) {
 function restoreSheet(config) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // Safety: verify this is a prepped copy
-  if (ss.getName().indexOf(" - Prepped") === -1) {
+  // Safety: verify this is a prepped copy (check marker first, filename as fallback)
+  var file = DriveApp.getFileById(ss.getId());
+  var desc = file.getDescription() || "";
+  if (desc.indexOf("[FILE_PREP_PREPPED]") === -1 && ss.getName().indexOf(" - Prepped") === -1) {
     return {
       success: false,
-      error: "This spreadsheet doesn't appear to be a prepped copy. Restore only works on files with ' - Prepped' in the name."
+      error: "This spreadsheet was not created by File Prep. Restore only works on prepped copies."
     };
   }
 

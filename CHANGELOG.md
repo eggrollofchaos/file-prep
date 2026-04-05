@@ -31,3 +31,6 @@
   `escapedPseudonym` in restore loop for clarity (escaping was already correct).
 - **Quick Protect doesn't clear corrupted config** — Now deletes the bad
   `FILE_PREP_LAST_CONFIG` property so subsequent runs don't fail repeatedly.
+- **Restore safety check survives renames** — Prepped copies now carry a
+  `[FILE_PREP_PREPPED]` marker in the Drive file description. Restore checks
+  the marker first, filename second — works even if the user renames the file.
