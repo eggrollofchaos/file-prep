@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    /* ─── Base ─── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      font-size: 13px;
+      color: #202124;
+      padding: 16px;
+      background: #fff;
+    }
+    h2 { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+    p.subtitle { font-size: 12px; color: #5f6368; margin-bottom: 16px; }
+
+    /* ─── Sections ─── */
+    .section {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e8eaed;
+    }
+    .section:last-child { border-bottom: none; }
+    .section-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: #5f6368;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    /* ─── Domain selector ─── */
+    select, input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #202124;
+      background: #fff;
+      outline: none;
+    }
+    select:focus, input[type="text"]:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.15);
+    }
+
+    /* ─── Detected fields ─── */
+    .field-list { list-style: none; }
+    .field-item {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f3f4;
+    }
+    .field-item:last-child { border-bottom: none; }
+    .field-item label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      gap: 8px;
+    }
+    .field-item .field-name { font-weight: 500; }
+    .field-item .field-range {
+      font-size: 11px;
+      color: #5f6368;
+      font-family: 'Roboto Mono', monospace;
+    }
+    .field-item .field-type {
+      font-size: 10px;
+      color: #fff;
+      background: #5f6368;
+      border-radius: 3px;
+      padding: 1px 5px;
+      margin-left: auto;
+    }
+    .field-type.name { background: #1a73e8; }
+    .field-type.email { background: #ea4335; }
+    .field-type.phone { background: #34a853; }
+    .field-type.org { background: #fbbc04; color: #202124; }
+
+    /* ─── Manual range input ─── */
+    .range-input-group {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .range-input-group input { flex: 1; }
+    .range-input-group select { width: 80px; flex: none; }
+
+    /* ─── Added ranges ─── */
+    .range-tag {
+      display: inline-flex;
+      align-items: center;
+      background: #e8f0fe;
+      color: #1a73e8;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      margin: 3px 3px 3px 0;
+    }
+    .range-tag .remove {
+      margin-left: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #5f6368;
+    }
+    .range-tag .remove:hover { color: #ea4335; }
+
+    /* ─── Buttons ─── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: background 0.15s;
+    }
+    .btn-primary {
+      background: #1a73e8;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-primary:disabled {
+      background: #dadce0;
+      color: #5f6368;
+      cursor: default;
+    }
+    .btn-secondary {
+      background: #fff;
+      color: #1a73e8;
+      border: 1px solid #dadce0;
+    }
+    .btn-secondary:hover { background: #f8f9fa; }
+    .btn-text {
+      background: none;
+      color: #5f6368;
+      font-size: 12px;
+      padding: 6px;
+    }
+    .btn-text:hover { color: #202124; }
+
+    /* ─── Status / Messages ─── */
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .status.success { display: block; background: #e6f4ea; color: #137333; }
+    .status.error { display: block; background: #fce8e6; color: #c5221f; }
+    .status.info { display: block; background: #e8f0fe; color: #1a73e8; }
+
+    .status a {
+      color: inherit;
+      font-weight: 500;
+    }
+
+    /* ─── Spinner ─── */
+    .spinner {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #5f6368;
+    }
+    .spinner.active { display: block; }
+    .spinner-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #1a73e8;
+      margin: 0 3px;
+      animation: bounce 1.2s infinite;
+    }
+    .spinner-dot:nth-child(2) { animation-delay: 0.2s; }
+    .spinner-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ─── Doc mode ─── */
+    .doc-found-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid #f1f3f4;
+      font-size: 12px;
+    }
+    .doc-found-item .original { font-weight: 500; }
+    .doc-found-item .arrow { color: #5f6368; margin: 0 6px; }
+    .doc-found-item .pseudo { color: #1a73e8; }
+    .doc-found-item .count { color: #5f6368; font-size: 11px; }
+
+    /* ─── Footer ─── */
+    .footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #e8eaed;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>File Prep</h2>
+  <p class="subtitle">Prepare documents for external review</p>
+
+  <!-- Status message area -->
+  <div id="status" class="status"></div>
+
+  <!-- Loading spinner -->
+  <div id="spinner" class="spinner">
+    <div class="spinner-dot"></div>
+    <div class="spinner-dot"></div>
+    <div class="spinner-dot"></div>
+    <div style="margin-top:8px" id="spinnerText">Working...</div>
+  </div>
+
+  <!-- Main content (shown/hidden based on doc type) -->
+  <div id="mainContent">
+
+    <!-- Domain selector -->
+    <div class="section">
+      <div class="section-title">Category</div>
+      <select id="domainSelect">
+        <option value="">Loading...</option>
+      </select>
+      <div style="margin-top:6px">
+        <button class="btn btn-text" onclick="showAddDomain()">+ Add category</button>
+      </div>
+      <div id="addDomainRow" style="display:none; margin-top:6px;">
+        <div class="range-input-group">
+          <input type="text" id="newDomainInput" placeholder="e.g. Participants">
+          <button class="btn btn-secondary" style="width:auto;margin:0;padding:6px 12px" onclick="addNewDomain()">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHEETS MODE: Field detection & range selection -->
+    <div id="sheetsMode" style="display:none">
+      <div class="section">
+        <div class="section-title">Detected Fields</div>
+        <div id="fieldList">
+          <p style="color:#5f6368; font-size:12px">Click "Scan" to detect fields</p>
+        </div>
+        <button class="btn btn-secondary" style="margin-top:8px" onclick="scanFields()">Scan this sheet</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Custom Ranges</div>
+        <div id="customRanges"></div>
+        <div class="range-input-group">
+          <input type="text" id="customRangeInput" placeholder="e.g. A2:A101">
+          <select id="customRangeType">
+            <option value="name">Name</option>
+            <option value="org">Org</option>
+            <option value="email">Email</option>
+            <option value="phone">Phone</option>
+          </select>
+        </div>
+        <button class="btn btn-text" onclick="addCustomRange()">+ Add range</button>
+      </div>
+    </div>
+
+    <!-- DOCS MODE: Found identifiers -->
+    <div id="docsMode" style="display:none">
+      <div class="section">
+        <div class="section-title">Recognized Terms</div>
+        <div id="docFoundList">
+          <p style="color:#5f6368; font-size:12px">Click "Scan" to find known terms</p>
+        </div>
+        <button class="btn btn-secondary" style="margin-top:8px" onclick="scanDoc()">Scan this document</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Add New Terms</div>
+        <div id="docNewTerms"></div>
+        <div class="range-input-group">
+          <input type="text" id="newTermInput" placeholder="e.g. Jane Smith">
+          <select id="newTermType">
+            <option value="name">Name</option>
+            <option value="org">Org</option>
+            <option value="email">Email</option>
+            <option value="phone">Phone</option>
+          </select>
+        </div>
+        <button class="btn btn-text" onclick="addNewTerm()">+ Add term</button>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="section">
+      <button class="btn btn-primary" id="protectBtn" onclick="protect()">
+        Protect - Create prepped copy
+      </button>
+      <button class="btn btn-secondary" id="restoreBtn" onclick="restore()">
+        Restore - Replace terms in this file
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <button class="btn btn-text" onclick="openMappingSheet()">View mapping sheet</button>
+    </div>
+  </div>
+
+  <script>
+    // ─── State ───
+    var detectedFields = [];
+    var customRanges = [];  // { range, type }
+    var docNewTerms = [];   // { original, type }
+    var isSheetMode = true;
+
+    // ─── Initialization ───
+    window.onload = function() {
+      // Load domains
+      google.script.run
+        .withSuccessHandler(function(domains) {
+          var select = document.getElementById('domainSelect');
+          select.innerHTML = '';
+          domains.forEach(function(d) {
+            var opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            select.appendChild(opt);
+          });
+        })
+        .getDomains();
+
+      // Detect if we're in Sheets or Docs
+      google.script.run
+        .withSuccessHandler(function(mode) {
+          isSheetMode = (mode === 'sheets');
+          document.getElementById('sheetsMode').style.display = isSheetMode ? 'block' : 'none';
+          document.getElementById('docsMode').style.display = isSheetMode ? 'none' : 'block';
+
+          if (isSheetMode) {
+            // Auto-scan on open
+            scanFields();
+          }
+        })
+        .getDocumentMode();
+    };
+
+    // ─── Sheets: Field Scanning ───
+    function scanFields() {
+      showSpinner('Scanning headers...');
+      google.script.run
+        .withSuccessHandler(function(fields) {
+          hideSpinner();
+          detectedFields = fields;
+          renderDetectedFields();
+        })
+        .withFailureHandler(function(err) {
+          hideSpinner();
+          showStatus('error', 'Scan failed: ' + err.message);
+        })
+        .autoDetectFields();
+    }
+
+    function renderDetectedFields() {
+      var container = document.getElementById('fieldList');
+      if (detectedFields.length === 0) {
+        container.innerHTML = '<p style="color:#5f6368;font-size:12px">No matching headers found. Add ranges manually below.</p>';
+        return;
+      }
+
+      var html = '<ul class="field-list">';
+      detectedFields.forEach(function(f, idx) {
+        html += '<li class="field-item">'
+          + '<label>'
+          + '<input type="checkbox" checked data-idx="' + idx + '"> '
+          + '<span class="field-name">' + escapeHtml(f.header) + '</span>'
+          + '<span class="field-range">' + f.range + '</span>'
+          + '</label>'
+          + '<span class="field-type ' + f.fieldType + '">' + f.fieldType + '</span>'
+          + '</li>';
+      });
+      html += '</ul>';
+      container.innerHTML = html;
+    }
+
+    // ─── Sheets: Custom Ranges ───
+    function addCustomRange() {
+      var input = document.getElementById('customRangeInput');
+      var typeSelect = document.getElementById('customRangeType');
+      var range = input.value.trim();
+      if (!range) return;
+
+      customRanges.push({ range: range, type: typeSelect.value });
+      input.value = '';
+      renderCustomRanges();
+    }
+
+    function removeCustomRange(idx) {
+      customRanges.splice(idx, 1);
+      renderCustomRanges();
+    }
+
+    function renderCustomRanges() {
+      var container = document.getElementById('customRanges');
+      var html = '';
+      customRanges.forEach(function(r, idx) {
+        html += '<span class="range-tag">'
+          + r.range + ' (' + r.type + ')'
+          + '<span class="remove" onclick="removeCustomRange(' + idx + ')">&times;</span>'
+          + '</span>';
+      });
+      container.innerHTML = html;
+    }
+
+    // ─── Docs: Scanning ───
+    function scanDoc() {
+      showSpinner('Scanning document...');
+      google.script.run
+        .withSuccessHandler(function(found) {
+          hideSpinner();
+          renderDocFound(found);
+        })
+        .withFailureHandler(function(err) {
+          hideSpinner();
+          showStatus('error', 'Scan failed: ' + err.message);
+        })
+        .scanDocForIdentifiers();
+    }
+
+    function renderDocFound(found) {
+      var container = document.getElementById('docFoundList');
+      if (found.length === 0) {
+        container.innerHTML = '<p style="color:#5f6368;font-size:12px">No known terms found. Add terms below, or protect a Sheet first to build the mapping.</p>';
+        return;
+      }
+
+      var html = '';
+      found.forEach(function(f) {
+        html += '<div class="doc-found-item">'
+          + '<span class="original">' + escapeHtml(f.original) + '</span>'
+          + '<span class="arrow">&rarr;</span>'
+          + '<span class="pseudo">' + escapeHtml(f.pseudonym) + '</span>'
+          + '<span class="count">&times;' + f.count + '</span>'
+          + '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    // ─── Docs: New Terms ───
+    function addNewTerm() {
+      var input = document.getElementById('newTermInput');
+      var typeSelect = document.getElementById('newTermType');
+      var term = input.value.trim();
+      if (!term) return;
+
+      docNewTerms.push({ original: term, type: typeSelect.value });
+      input.value = '';
+      renderNewTerms();
+    }
+
+    function removeNewTerm(idx) {
+      docNewTerms.splice(idx, 1);
+      renderNewTerms();
+    }
+
+    function renderNewTerms() {
+      var container = document.getElementById('docNewTerms');
+      var html = '';
+      docNewTerms.forEach(function(t, idx) {
+        html += '<span class="range-tag">'
+          + escapeHtml(t.original) + ' (' + t.type + ')'
+          + '<span class="remove" onclick="removeNewTerm(' + idx + ')">&times;</span>'
+          + '</span>';
+      });
+      container.innerHTML = html;
+    }
+
+    // ─── Domain Management ───
+    function showAddDomain() {
+      document.getElementById('addDomainRow').style.display = 'block';
+      document.getElementById('newDomainInput').focus();
+    }
+
+    function addNewDomain() {
+      var input = document.getElementById('newDomainInput');
+      var name = input.value.trim();
+      if (!name) return;
+
+      google.script.run
+        .withSuccessHandler(function(created) {
+          if (created) {
+            var select = document.getElementById('domainSelect');
+            var opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+            select.value = name;
+            input.value = '';
+            document.getElementById('addDomainRow').style.display = 'none';
+            showStatus('success', 'Category "' + name + '" added.');
+          } else {
+            showStatus('info', 'Category "' + name + '" already exists.');
+          }
+        })
+        .addDomain(name);
+    }
+
+    // ─── Protect (Anonymize) ───
+    function protect() {
+      var domain = document.getElementById('domainSelect').value;
+      if (!domain) {
+        showStatus('error', 'Please select a category first.');
+        return;
+      }
+
+      if (isSheetMode) {
+        protectSheet(domain);
+      } else {
+        protectDoc(domain);
+      }
+    }
+
+    function protectSheet(domain) {
+      // Collect checked detected fields
+      var ranges = [];
+      var fieldTypes = {};
+
+      var checkboxes = document.querySelectorAll('#fieldList input[type="checkbox"]:checked');
+      checkboxes.forEach(function(cb) {
+        var idx = parseInt(cb.dataset.idx);
+        var f = detectedFields[idx];
+        if (f) {
+          ranges.push(f.range);
+          fieldTypes[f.range] = f.fieldType;
+        }
+      });
+
+      // Add custom ranges
+      customRanges.forEach(function(r) {
+        ranges.push(r.range);
+        fieldTypes[r.range] = r.type;
+      });
+
+      if (ranges.length === 0) {
+        showStatus('error', 'No ranges selected. Please check detected fields or add custom ranges.');
+        return;
+      }
+
+      showSpinner('Preparing protected copy...');
+      disableButtons();
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideSpinner();
+          enableButtons();
+          if (result.success) {
+            showStatus('success',
+              'Done! <a href="' + result.copyUrl + '" target="_blank">Open prepped copy</a>'
+              + '<br><small>' + result.stats.anonymized + ' cells prepped'
+              + (result.stats.newMappings > 0 ? ', ' + result.stats.newMappings + ' new terms added' : '')
+              + '</small>'
+            );
+          }
+        })
+        .withFailureHandler(function(err) {
+          hideSpinner();
+          enableButtons();
+          showStatus('error', 'Failed: ' + err.message);
+        })
+        .anonymizeSheet({ ranges: ranges, fieldTypes: fieldTypes, domain: domain });
+    }
+
+    function protectDoc(domain) {
+      showSpinner('Preparing protected copy...');
+      disableButtons();
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideSpinner();
+          enableButtons();
+          if (result.success) {
+            showStatus('success',
+              'Done! <a href="' + result.copyUrl + '" target="_blank">Open prepped copy</a>'
+              + '<br><small>' + result.stats.termsFound + ' terms replaced</small>'
+            );
+          }
+        })
+        .withFailureHandler(function(err) {
+          hideSpinner();
+          enableButtons();
+          showStatus('error', 'Failed: ' + err.message);
+        })
+        .anonymizeDoc({ domain: domain, additionalTerms: docNewTerms });
+    }
+
+    // ─── Restore (De-anonymize) ───
+    function restore() {
+      var domain = document.getElementById('domainSelect').value;
+
+      if (!confirm('This will replace all prepped terms in the current file with original values. Continue?')) {
+        return;
+      }
+
+      showSpinner('Restoring original values...');
+      disableButtons();
+
+      if (isSheetMode) {
+        // Collect ranges if specified, otherwise restore entire sheet
+        var ranges = [];
+        customRanges.forEach(function(r) { ranges.push(r.range); });
+
+        google.script.run
+          .withSuccessHandler(function(result) {
+            hideSpinner();
+            enableButtons();
+            showStatus('success',
+              'Restored! ' + result.stats.restored + ' values replaced back to originals.'
+            );
+          })
+          .withFailureHandler(function(err) {
+            hideSpinner();
+            enableButtons();
+            showStatus('error', 'Restore failed: ' + err.message);
+          })
+          .restoreSheet({ ranges: ranges, domain: domain || null });
+      } else {
+        google.script.run
+          .withSuccessHandler(function(result) {
+            hideSpinner();
+            enableButtons();
+            showStatus('success',
+              'Restored! ' + result.stats.termsFound + ' terms replaced back to originals.'
+            );
+          })
+          .withFailureHandler(function(err) {
+            hideSpinner();
+            enableButtons();
+            showStatus('error', 'Restore failed: ' + err.message);
+          })
+          .restoreDoc({ domain: domain || null });
+      }
+    }
+
+    // ─── Mapping Sheet ───
+    function openMappingSheet() {
+      google.script.run
+        .withSuccessHandler(function(url) {
+          window.open(url, '_blank');
+        })
+        .getMappingSheetUrl();
+    }
+
+    // ─── UI Helpers ───
+    function showStatus(type, msg) {
+      var el = document.getElementById('status');
+      el.className = 'status ' + type;
+      el.innerHTML = msg;
+      // Auto-hide after 10 seconds for success/info
+      if (type !== 'error') {
+        setTimeout(function() { el.className = 'status'; el.innerHTML = ''; }, 10000);
+      }
+    }
+
+    function showSpinner(text) {
+      document.getElementById('spinner').className = 'spinner active';
+      document.getElementById('spinnerText').textContent = text || 'Working...';
+      document.getElementById('mainContent').style.opacity = '0.5';
+      document.getElementById('mainContent').style.pointerEvents = 'none';
+    }
+
+    function hideSpinner() {
+      document.getElementById('spinner').className = 'spinner';
+      document.getElementById('mainContent').style.opacity = '1';
+      document.getElementById('mainContent').style.pointerEvents = 'auto';
+    }
+
+    function disableButtons() {
+      document.getElementById('protectBtn').disabled = true;
+      document.getElementById('restoreBtn').disabled = true;
+    }
+
+    function enableButtons() {
+      document.getElementById('protectBtn').disabled = false;
+      document.getElementById('restoreBtn').disabled = false;
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
