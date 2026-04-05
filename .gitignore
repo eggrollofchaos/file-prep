@@ -1,1 +1,5 @@
 review/
+.agent-sessions/
+*.~lock.*
+.agent-sessions/
+*.~lock.*
