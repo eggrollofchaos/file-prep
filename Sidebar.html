@@ -620,9 +620,13 @@
           .withSuccessHandler(function(result) {
             hideSpinner();
             enableButtons();
-            showStatus('success',
-              'Restored! ' + result.stats.restored + ' values replaced back to originals.'
-            );
+            if (result.success === false) {
+              showStatus('error', result.error || 'Restore failed.');
+            } else {
+              showStatus('success',
+                'Restored! ' + result.stats.restored + ' values replaced back to originals.'
+              );
+            }
           })
           .withFailureHandler(function(err) {
             hideSpinner();
@@ -635,9 +639,13 @@
           .withSuccessHandler(function(result) {
             hideSpinner();
             enableButtons();
-            showStatus('success',
-              'Restored! ' + result.stats.termsFound + ' terms replaced back to originals.'
-            );
+            if (result.success === false) {
+              showStatus('error', result.error || 'Restore failed.');
+            } else {
+              showStatus('success',
+                'Restored! ' + result.stats.termsFound + ' terms replaced back to originals.'
+              );
+            }
           })
           .withFailureHandler(function(err) {
             hideSpinner();

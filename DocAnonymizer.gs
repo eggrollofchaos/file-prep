@@ -120,7 +120,7 @@ function anonymizeDoc(config) {
 
   // Process any additional terms first (add to mappings)
   var additionalTerms = config.additionalTerms || [];
-  var phoneCounter = Object.keys(mappings.usedPseudonyms).length + 1;
+  var phoneCounter = countPhoneMappings_(mappings) + 1;
   var domain = config.domain || "Funders";
 
   for (var i = 0; i < additionalTerms.length; i++) {
@@ -148,12 +148,13 @@ function anonymizeDoc(config) {
 
   for (var r = 0; r < entries.length; r++) {
     var escaped = escapeRegex_(entries[r].original);
-    var found = copyBody.findText("(?i)" + escaped);
+    var pattern = "(?i)" + addWordBoundaries_(entries[r].original, escaped);
+    var found = copyBody.findText(pattern);
     if (found) {
       stats.termsFound++;
+      copyBody.replaceText(pattern, entries[r].pseudonym);
+      stats.replacements++;
     }
-    copyBody.replaceText("(?i)" + escaped, entries[r].pseudonym);
-    stats.replacements++;
   }
 
   // Also process headers and footers
@@ -162,13 +163,17 @@ function anonymizeDoc(config) {
 
   if (header) {
     for (var r = 0; r < entries.length; r++) {
-      header.replaceText("(?i)" + escapeRegex_(entries[r].original), entries[r].pseudonym);
+      var hEscaped = escapeRegex_(entries[r].original);
+      var hPattern = "(?i)" + addWordBoundaries_(entries[r].original, hEscaped);
+      header.replaceText(hPattern, entries[r].pseudonym);
     }
   }
 
   if (footer) {
     for (var r = 0; r < entries.length; r++) {
-      footer.replaceText("(?i)" + escapeRegex_(entries[r].original), entries[r].pseudonym);
+      var fEscaped = escapeRegex_(entries[r].original);
+      var fPattern = "(?i)" + addWordBoundaries_(entries[r].original, fEscaped);
+      footer.replaceText(fPattern, entries[r].pseudonym);
     }
   }
 
@@ -192,6 +197,17 @@ function anonymizeDoc(config) {
 function restoreDoc(config) {
   config = config || {};
   var doc = DocumentApp.getActiveDocument();
+
+  // Safety: verify this is a prepped copy
+  if (doc.getName().indexOf(" - Prepped") === -1) {
+    return {
+      success: false,
+      error: "This document doesn't appear to be a prepped copy. Restore only works on files with ' - Prepped' in the name."
+    };
+  }
+
+  // Create backup before destructive in-place restore
+  DriveApp.getFileById(doc.getId()).makeCopy(doc.getName() + " - Pre-Restore Backup");
 
   // Load mappings
   var mappings;
@@ -228,9 +244,9 @@ function restoreDoc(config) {
     var found = body.findText(escaped);
     if (found) {
       stats.termsFound++;
+      body.replaceText(escaped, replacements[r].original);
+      stats.replacements++;
     }
-    body.replaceText(escaped, replacements[r].original);
-    stats.replacements++;
   }
 
   // Also process headers and footers
@@ -265,4 +281,25 @@ function restoreDoc(config) {
  */
 function escapeRegex_(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Add word boundaries to a regex pattern when the original term
+ * starts/ends with alphanumeric characters. Prevents common English
+ * words (e.g., "Amber", "Dawn", "Reed") in the pseudonym banks from
+ * matching inside unrelated text.
+ * @param {string} original - The original unescaped term
+ * @param {string} escaped - The regex-escaped term
+ * @return {string} Pattern with word boundaries where appropriate
+ * @private
+ */
+function addWordBoundaries_(original, escaped) {
+  var pattern = escaped;
+  if (/[a-zA-Z0-9]/.test(original.charAt(0))) {
+    pattern = "\\b" + pattern;
+  }
+  if (/[a-zA-Z0-9]/.test(original.charAt(original.length - 1))) {
+    pattern = pattern + "\\b";
+  }
+  return pattern;
 }

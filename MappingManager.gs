@@ -252,10 +252,16 @@ function loadAllMappings() {
     var m = loadMappings(domains[d]);
 
     for (var key in m.byOriginal) {
-      combined.byOriginal[key] = m.byOriginal[key];
+      if (!combined.byOriginal[key]) {
+        combined.byOriginal[key] = m.byOriginal[key];
+      } else if (combined.byOriginal[key].pseudonym !== m.byOriginal[key].pseudonym) {
+        Logger.log("Warning: cross-domain conflict for '" + key + "' — keeping first-seen pseudonym");
+      }
     }
     for (var key in m.byPseudonym) {
-      combined.byPseudonym[key] = m.byPseudonym[key];
+      if (!combined.byPseudonym[key]) {
+        combined.byPseudonym[key] = m.byPseudonym[key];
+      }
     }
     for (var key in m.usedPseudonyms) {
       combined.usedPseudonyms[key] = true;
@@ -263,4 +269,22 @@ function loadAllMappings() {
   }
 
   return combined;
+}
+
+/**
+ * Count unique phone-type mappings to initialize the phone counter correctly.
+ * @param {Object} mappings - Result from loadMappings() or loadAllMappings()
+ * @return {number}
+ */
+function countPhoneMappings_(mappings) {
+  var seen = {};
+  var count = 0;
+  for (var key in mappings.byOriginal) {
+    var entry = mappings.byOriginal[key];
+    if (entry.type === "phone" && !seen[entry.pseudonym]) {
+      seen[entry.pseudonym] = true;
+      count++;
+    }
+  }
+  return count;
 }

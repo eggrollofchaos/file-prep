@@ -180,7 +180,7 @@ function anonymizeSheet(config) {
   var mappings = loadMappings(domain);
 
   var stats = { processed: 0, anonymized: 0, skipped: 0, newMappings: 0 };
-  var phoneCounter = Object.keys(mappings.usedPseudonyms).length + 1;
+  var phoneCounter = countPhoneMappings_(mappings) + 1;
 
   // 3. Process each range
   var ranges = config.ranges || [];
@@ -258,7 +258,17 @@ function anonymizeSheet(config) {
  * @return {Object} { success, stats }
  */
 function restoreSheet(config) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Safety: verify this is a prepped copy
+  if (ss.getName().indexOf(" - Prepped") === -1) {
+    return {
+      success: false,
+      error: "This spreadsheet doesn't appear to be a prepped copy. Restore only works on files with ' - Prepped' in the name."
+    };
+  }
+
+  var sheet = ss.getActiveSheet();
 
   // Load mappings
   var mappings;
