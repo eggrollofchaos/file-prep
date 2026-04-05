@@ -8,24 +8,5 @@
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/script.container.ui",
     "https://www.googleapis.com/auth/userinfo.email"
-  ],
-  "addOns": {
-    "common": {
-      "name": "File Prep",
-      "logoUrl": "https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png",
-      "homepageTrigger": {
-        "runFunction": "onOpen"
-      }
-    },
-    "sheets": {
-      "onOpenTrigger": {
-        "runFunction": "onOpen"
-      }
-    },
-    "docs": {
-      "onOpenTrigger": {
-        "runFunction": "onOpen"
-      }
-    }
-  }
+  ]
 }
