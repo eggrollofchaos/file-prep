@@ -98,7 +98,22 @@ function quickProtect() {
     return;
   }
 
-  var config = JSON.parse(lastConfig);
+  var config;
+  try {
+    config = JSON.parse(lastConfig);
+  } catch (parseErr) {
+    props.deleteProperty("FILE_PREP_LAST_CONFIG");
+    try {
+      SpreadsheetApp.getUi().alert(
+        "Saved settings are corrupted and have been cleared. Please use the sidebar to set up protection again."
+      );
+    } catch (e) {
+      DocumentApp.getUi().alert(
+        "Saved settings are corrupted and have been cleared. Please use the sidebar to set up protection again."
+      );
+    }
+    return;
+  }
   var mode = getDocumentMode();
 
   var result;

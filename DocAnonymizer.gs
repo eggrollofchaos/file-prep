@@ -240,11 +240,11 @@ function restoreDoc(config) {
   var body = doc.getBody();
 
   for (var r = 0; r < replacements.length; r++) {
-    var escaped = escapeRegex_(replacements[r].pseudonym);
-    var found = body.findText(escaped);
+    var escapedPseudonym = escapeRegex_(replacements[r].pseudonym);
+    var found = body.findText(escapedPseudonym);
     if (found) {
       stats.termsFound++;
-      body.replaceText(escaped, replacements[r].original);
+      body.replaceText(escapedPseudonym, replacements[r].original);
       stats.replacements++;
     }
   }

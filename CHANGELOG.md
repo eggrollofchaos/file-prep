@@ -23,3 +23,11 @@
 - **Sidebar swallows restore safety errors** — Restore success handlers now check
   `result.success` and display the error message when the safety check blocks the
   operation.
+- **Quick Protect crashes on corrupted saved config** — `quickProtect()` now
+  catches `JSON.parse` failures and alerts the user to re-configure via the sidebar.
+- **INSTALL.md file naming instruction unclear** — Clarified that users should type
+  names without `.gs` extension, with an example.
+- **Restore variable naming in DocAnonymizer** — Renamed `escaped` to
+  `escapedPseudonym` in restore loop for clarity (escaping was already correct).
+- **Quick Protect doesn't clear corrupted config** — Now deletes the bad
+  `FILE_PREP_LAST_CONFIG` property so subsequent runs don't fail repeatedly.

@@ -23,7 +23,7 @@ The project starts with a single file called `Code.gs`. You'll add 5 total `.gs`
 For each of these files, repeat this process:
 1. Click the **"+"** button next to "Files" in the left sidebar
 2. Choose **"Script"**
-3. Rename the new file (click on its name) — remove the `.gs` extension when typing, Apps Script adds it automatically:
+3. Rename the new file (click on its name) — type the name *without* `.gs` (e.g., type `PseudonymGenerator`, not `PseudonymGenerator.gs`). Apps Script adds the extension automatically:
    - `PseudonymGenerator`
    - `MappingManager`
    - `SheetAnonymizer`
