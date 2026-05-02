@@ -1,5 +1,7 @@
 review/
 .agent-sessions/
 *.~lock.*
-.agent-sessions/
+.claude/
+.codex/
 *.~lock.*
+.DS_Store
