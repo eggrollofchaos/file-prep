@@ -1,0 +1,22 @@
+Donor Name,Organization,Email,Phone,Donation Amount,Donation Date,Fund/DAF,Region,Recurring,Notes
+M. Camden,Crest,m.morgan@example.com,(555) 000-0001,"$250,000.00",01/15/2026,Cedar,West Coast,Yes,M. Aspen
+R. Indigo,Beacon,r.rowan@example.com,(555) 000-0002,"$150,000.00",01/22/2026,Birch,Northeast,No,F. Rowan
+P. Rowan,Ridge,p.parker@example.com,(555) 000-0003,"$75,000.00",02/03/2026,Delta,Northeast,Yes,I. Yardley
+J. Wren,Willow,j.jasper@example.com,(555) 000-0004,"$100,000.00",02/10/2026,Wave,Midwest,Yes,A. Rowan
+S. Oakley,Oak,s.sage@example.com,(555) 000-0005,"$50,000.00",02/14/2026,Delta,Southeast,No,E. Parker
+D. Kendall,Kelp,d.dakota@example.com,(555) 000-0006,"$500,000.00",02/28/2026,Keystone,West Coast,Yes,L. Dakota
+T. Finley,Fern,t.tatum@example.com,(555) 000-0007,"$25,000.00",03/01/2026,Delta,Mid-Atlantic,No,P. Parker
+A. Glenn,Summit,a.aspen@example.com,(555) 000-0008,"$180,000.00",03/05/2026,Spruce,Southwest,Yes,F. Parker
+W. Tatum,Timber,w.wren@example.com,(555) 000-0009,"$60,000.00",03/10/2026,Delta,Northeast,No,P. Morgan
+N. Aspen,Arbor,n.noel@example.com,(555) 000-0010,"$125,000.00",03/15/2026,Alpine,Pacific NW,Yes,E. Ellis
+M. Noel,Nectar,m.morgan@example.com,(555) 000-0011,"$90,000.00",03/18/2026,Nimbus,Midwest,Yes,P. Finley
+E. Tatum,Tide,e.ellis@example.com,(555) 000-0012,"$35,000.00",03/22/2026,Delta,West Coast,No,A. Aspen
+,,,,,,,,,
+Q1 Summary,,,,,,,,,
+Metric,Value,,,,,,,,
+Total Donations,"$1,640,000.00",,,,,,,,
+Average Gift Size,"$136,666.67",,,,,,,,
+Number of Donors,12,,,,,,,,
+Recurring Donors,7,,,,,,,,
+Top Donor,D. Kendall,,,,,,,,
+Top Organization,Kelp,,,,,,,,

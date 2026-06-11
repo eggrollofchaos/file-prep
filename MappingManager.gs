@@ -206,15 +206,23 @@ function getOrCreatePseudonym(domain, value, type, mappings, phoneCounter) {
       pseudonym = generatePersonPseudonym(trimmed, mappings.usedPseudonyms);
       break;
     case "org":
-      pseudonym = generateOrgPseudonym(trimmed, mappings.usedPseudonyms);
+      // Check if this org/fund name is related to an existing org
+      // E.g., "Kim Family DAF - Goldman Sachs" contains "Kim Family" which
+      // matches "Kim Family Trust" → derive from its pseudonym "Kelp"
+      var orgAssoc = findOrgAssociation_(trimmed, mappings);
+      if (orgAssoc) {
+        pseudonym = deriveRelatedOrgName_(orgAssoc, mappings.usedPseudonyms);
+      } else {
+        pseudonym = generateOrgPseudonym(trimmed, mappings.usedPseudonyms);
+      }
       break;
     case "email":
-      // Try to find associated person/org pseudonym first
-      var localPart = trimmed.split("@")[0];
-      var assocPseudo = mappings.byOriginal[localPart];
-      if (assocPseudo) {
-        pseudonym = generateEmailPseudonym(assocPseudo.pseudonym);
+      // Derive email from the associated person/org pseudonym
+      var emailAssoc = findEmailAssociation_(trimmed, mappings);
+      if (emailAssoc) {
+        pseudonym = generateEmailPseudonym(emailAssoc);
       } else {
+        var localPart = trimmed.split("@")[0];
         pseudonym = generateEmailPseudonym(
           generatePersonPseudonym(localPart, mappings.usedPseudonyms)
         );
@@ -228,14 +236,185 @@ function getOrCreatePseudonym(domain, value, type, mappings, phoneCounter) {
   }
 
   // Save to mapping sheet and update in-memory cache
-  addMapping(domain, trimmed, pseudonym, type);
-  mappings.byOriginal[trimmed] = { pseudonym: pseudonym, type: type };
-  mappings.byOriginal[trimmed.toLowerCase()] = { pseudonym: pseudonym, type: type };
-  mappings.byPseudonym[pseudonym] = { original: trimmed, type: type };
-  mappings.byPseudonym[pseudonym.toLowerCase()] = { original: trimmed, type: type };
-  mappings.usedPseudonyms[pseudonym] = true;
+  saveMappingToCache_(domain, trimmed, pseudonym, type, mappings);
+
+  // For coupled names ("David & Rachel Kim" → "D. & R. Kendall"),
+  // also create sub-mappings for individual names so freetext can catch them.
+  if (type === "name") {
+    var couple = parseCoupledName(trimmed);
+    if (couple) {
+      // Extract the pseudonym's last name: "D. & R. Kendall" → "Kendall"
+      var pseudoParts = pseudonym.match(/(\S+)$/);
+      var pseudoLast = pseudoParts ? pseudoParts[1] : pseudonym;
+
+      // Map each individual: "Rachel Kim" → "R. Kendall", "David Kim" → "D. Kendall"
+      var subMappings = [
+        { original: couple.person1Full, pseudo: couple.person1First.charAt(0).toUpperCase() + ". " + pseudoLast },
+        { original: couple.person2Full, pseudo: couple.person2First.charAt(0).toUpperCase() + ". " + pseudoLast },
+        { original: couple.person1First, pseudo: couple.person1First.charAt(0).toUpperCase() + ". " + pseudoLast },
+        { original: couple.person2First, pseudo: couple.person2First.charAt(0).toUpperCase() + ". " + pseudoLast }
+      ];
+
+      for (var s = 0; s < subMappings.length; s++) {
+        var sub = subMappings[s];
+        if (!mappings.byOriginal[sub.original] && !mappings.byOriginal[sub.original.toLowerCase()]) {
+          saveMappingToCache_(domain, sub.original, sub.pseudo, "name", mappings);
+        }
+      }
+    }
+  }
 
   return pseudonym;
+}
+
+/**
+ * Save a mapping to the sheet and update in-memory cache.
+ * @private
+ */
+function saveMappingToCache_(domain, original, pseudonym, type, mappings) {
+  addMapping(domain, original, pseudonym, type);
+  mappings.byOriginal[original] = { pseudonym: pseudonym, type: type, original: original };
+  mappings.byOriginal[original.toLowerCase()] = { pseudonym: pseudonym, type: type, original: original };
+  mappings.byPseudonym[pseudonym] = { original: original, type: type, pseudonym: pseudonym };
+  mappings.byPseudonym[pseudonym.toLowerCase()] = { original: original, type: type, pseudonym: pseudonym };
+  mappings.usedPseudonyms[pseudonym] = true;
+}
+
+/**
+ * Find if an org/fund name is related to an existing mapped org.
+ * E.g., "Kim Family DAF - Goldman Sachs Philanthropy Fund" contains
+ * "Kim Family" which overlaps with "Kim Family Trust" → return "Kelp".
+ *
+ * @param {string} orgName - The org/fund name to check
+ * @param {Object} mappings
+ * @return {string|null} The associated org pseudonym, or null
+ * @private
+ */
+function findOrgAssociation_(orgName, mappings) {
+  var nameLower = orgName.toLowerCase();
+  var bestMatch = null;
+  var bestScore = 0;
+
+  for (var key in mappings.byOriginal) {
+    var entry = mappings.byOriginal[key];
+    if (!entry || !entry.pseudonym || entry.type !== "org") continue;
+
+    var origLower = key.toLowerCase();
+    // Skip if it's the same value
+    if (origLower === nameLower) continue;
+
+    var origTokens = origLower.split(/[\s&,.\-']+/).filter(function(t) { return t.length > 2; });
+
+    var score = 0;
+    var matchedTokens = 0;
+    for (var i = 0; i < origTokens.length; i++) {
+      if (nameLower.indexOf(origTokens[i]) !== -1) {
+        score += origTokens[i].length;
+        matchedTokens++;
+      }
+    }
+
+    // Require at least 2 matching tokens or 1 long token (>5 chars)
+    // to avoid false matches on short common words
+    if (matchedTokens >= 2 || (matchedTokens >= 1 && score > 5)) {
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = entry.pseudonym;
+      }
+    }
+  }
+
+  return bestMatch;
+}
+
+/**
+ * Generate a related org name from an existing org pseudonym.
+ * "Kelp" → "Kelp 2", "Kelp 3", etc.
+ *
+ * @param {string} basePseudonym - The existing org pseudonym to derive from
+ * @param {Object} usedPseudonyms - Set of already-used pseudonyms
+ * @return {string}
+ * @private
+ */
+function deriveRelatedOrgName_(basePseudonym, usedPseudonyms) {
+  for (var n = 2; n < 999; n++) {
+    var candidate = basePseudonym + " " + n;
+    if (!usedPseudonyms[candidate]) {
+      return candidate;
+    }
+  }
+  return basePseudonym + "-" + Date.now();
+}
+
+/**
+ * Search existing mappings to find a person or org whose name matches
+ * components of an email address. Returns their pseudonym if found.
+ *
+ * E.g., "r.blackwell@blackwellindustries.com" →
+ *   checks "blackwell" against all mapped names/orgs →
+ *   finds "Robert Blackwell III" → returns "R. Indigo"
+ *
+ * @param {string} email - The real email address
+ * @param {Object} mappings - Current mappings with byOriginal
+ * @return {string|null} The associated pseudonym, or null if no match
+ * @private
+ */
+function findEmailAssociation_(email, mappings) {
+  var atIdx = email.indexOf("@");
+  if (atIdx < 0) return null;
+
+  var localPart = email.substring(0, atIdx).toLowerCase();  // "r.blackwell"
+  var domainPart = email.substring(atIdx + 1).toLowerCase(); // "blackwellindustries.com"
+  var domainName = domainPart.split(".")[0];                  // "blackwellindustries"
+
+  // Split local part into tokens: "r.blackwell" → ["r", "blackwell"]
+  // Also split domain: "blackwellindustries" stays whole, plus try splitting camelCase/compounds
+  var localTokens = localPart.split(/[.\-_]+/).filter(function(t) { return t.length > 1; });
+
+  var bestMatch = null;
+  var bestScore = 0;
+
+  for (var key in mappings.byOriginal) {
+    var entry = mappings.byOriginal[key];
+    if (!entry || !entry.pseudonym) continue;
+    // Only match against name and org types
+    if (entry.type !== "name" && entry.type !== "org") continue;
+
+    var originalLower = key.toLowerCase();
+    var originalTokens = originalLower.split(/[\s&,.\-']+/).filter(function(t) { return t.length > 1; });
+
+    var score = 0;
+
+    // Check how many original name tokens appear in the local part or domain
+    for (var i = 0; i < originalTokens.length; i++) {
+      var tok = originalTokens[i];
+      if (tok.length < 2) continue;
+      if (localPart.indexOf(tok) !== -1) score += tok.length;
+      if (domainName.indexOf(tok) !== -1) score += tok.length;
+    }
+
+    // Check if any local tokens appear in the original name
+    for (var j = 0; j < localTokens.length; j++) {
+      if (localTokens[j].length < 2) continue;
+      if (originalLower.indexOf(localTokens[j]) !== -1) score += localTokens[j].length;
+    }
+
+    if (score < 3) continue;
+
+    // Prefer person matches over org matches (emails belong to people).
+    // Give name-type a 50% score boost so "Robert Blackwell III" wins
+    // over "Blackwell Industries" even when the org has more token overlap.
+    if (entry.type === "name") {
+      score = Math.round(score * 1.5);
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = entry.pseudonym;
+    }
+  }
+
+  return bestScore >= 3 ? bestMatch : null;
 }
 
 /**

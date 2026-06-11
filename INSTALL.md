@@ -68,28 +68,32 @@ When you're done, your project should have these files in the sidebar:
 }
 ```
 
-## Step 4: Test It
+## Step 4: Deploy as a Test Add-on
 
 1. Save all files (Ctrl+S / Cmd+S)
-2. Go back to your Google Sheet tab and **reload the page**
-3. After a few seconds, look for **Extensions → File Prep** in the menu bar
-4. Click **Open sidebar** — the first time, Google will ask you to authorize:
+2. In the Apps Script editor, click **"Deploy"** → **"Test deployments"**
+3. Next to "Select type," click the gear icon and make sure **"Editor Add-on"** is checked
+4. Click **"Create new test"**
+5. Set **Version** to "Latest Code"
+6. Set **Config** to "Installed and Enabled"
+7. For **Test document**, click the upload icon and select the Google Sheet you want to test with
+8. Click **"Save test"**, then **"Done"**
+
+**Important:** Test deployments only work on the specific test document you selected. To use File Prep on a different Sheet, create another test (click "+ Add test") and select that file.
+
+To use File Prep on the test document: go to the Test deployments screen, select your test, and click **"Execute."** The document will open with File Prep available under Extensions.
+
+**Note:** To make File Prep available in ALL Sheets and Docs automatically (without per-document setup), you'd need to publish it privately to the Google Workspace Marketplace. See BACKLOG.md for details.
+
+## Step 5: First Run Authorization
+
+1. Once the test document opens, go to **Extensions → File Prep → Open sidebar**
+2. The first time, Google will ask you to authorize:
    - "Review Permissions"
    - Choose your account
    - If you see "Google hasn't verified this app," click "Advanced" → "Go to File Prep (unsafe)" — this is normal for personal scripts
    - Click "Allow"
-5. The sidebar should appear on the right side of the sheet
-6. The sidebar should appear on the right side
-
-## Step 5: Deploy as an Add-on (Optional — for Convenience)
-
-If you want File Prep to appear automatically in every Sheet and Doc:
-
-1. In the Apps Script editor, click **"Deploy"** → **"Test deployments"**
-2. Click **"Install"**
-3. Now "File Prep" will appear under Extensions in every Sheet and Doc you open
-
-This is a test deployment — only you can see it. Nobody else in your org will see it or know about it.
+3. The sidebar should appear on the right side of the sheet
 
 ## How to Use
 

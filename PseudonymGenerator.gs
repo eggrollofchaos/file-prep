@@ -71,7 +71,8 @@ var ORG_WORDS_ = {
 /**
  * Generate a pseudonym for a person name.
  * "Sarah Johnson" → "S. Jasper"
- * Preserves both initials when possible.
+ * "David & Rachel Kim" → "D. & R. Kendall"
+ * Preserves initials. Handles coupled names (with & or "and").
  *
  * @param {string} realName - The real person name
  * @param {Object} existingMappings - Map of existing pseudonyms (pseudonym → true)
@@ -79,33 +80,73 @@ var ORG_WORDS_ = {
  */
 function generatePersonPseudonym(realName, existingMappings) {
   existingMappings = existingMappings || {};
-  var parts = realName.trim().split(/\s+/);
+  var trimmed = realName.trim();
 
+  // Detect coupled names: "David & Rachel Kim", "James and Dorothy Whitfield"
+  var coupleMatch = trimmed.match(/^(\S+)\s+(?:&|and)\s+(\S+)\s+(.+)$/i);
+  if (coupleMatch) {
+    var first1 = coupleMatch[1].charAt(0).toUpperCase();
+    var first2 = coupleMatch[2].charAt(0).toUpperCase();
+    var lastName = coupleMatch[3];
+    var lastInitial = lastName.charAt(0).toUpperCase();
+
+    if (!FIRST_NAMES_[lastInitial]) lastInitial = "A";
+    var lastNameBank = FIRST_NAMES_[lastInitial];
+
+    for (var i = 0; i < lastNameBank.length; i++) {
+      var candidate = first1 + ". & " + first2 + ". " + lastNameBank[i];
+      if (!existingMappings[candidate]) {
+        return candidate;
+      }
+    }
+    // Fallback
+    return first1 + ". & " + first2 + ". " + lastNameBank[0] + Date.now();
+  }
+
+  // Standard single name
+  var parts = trimmed.split(/\s+/);
   var firstInitial = (parts[0] || "A").charAt(0).toUpperCase();
-  var lastInitial = (parts.length > 1 ? parts[parts.length - 1] : parts[0]).charAt(0).toUpperCase();
+  var lastInit = (parts.length > 1 ? parts[parts.length - 1] : parts[0]).charAt(0).toUpperCase();
 
-  // Ensure valid letter
   if (!FIRST_NAMES_[firstInitial]) firstInitial = "A";
-  if (!FIRST_NAMES_[lastInitial]) lastInitial = "A";
+  if (!FIRST_NAMES_[lastInit]) lastInit = "A";
 
-  // Try to find an unused last-name from the bank matching lastInitial
-  var lastNameBank = FIRST_NAMES_[lastInitial];
-  for (var i = 0; i < lastNameBank.length; i++) {
-    var candidate = firstInitial + ". " + lastNameBank[i];
-    if (!existingMappings[candidate]) {
-      return candidate;
+  var bank = FIRST_NAMES_[lastInit];
+  for (var j = 0; j < bank.length; j++) {
+    var cand = firstInitial + ". " + bank[j];
+    if (!existingMappings[cand]) {
+      return cand;
     }
   }
 
-  // Fallback: append a number
   for (var n = 2; n < 999; n++) {
-    var fallback = firstInitial + ". " + lastNameBank[0] + n;
+    var fallback = firstInitial + ". " + bank[0] + n;
     if (!existingMappings[fallback]) {
       return fallback;
     }
   }
 
-  return firstInitial + ". " + lastInitial + "-" + Date.now();
+  return firstInitial + ". " + lastInit + "-" + Date.now();
+}
+
+/**
+ * Extract individual names from a coupled name for sub-mappings.
+ * "David & Rachel Kim" → ["David Kim", "Rachel Kim", "David", "Rachel"]
+ *
+ * @param {string} realName
+ * @return {Object|null} { person1Full, person2Full, person1First, person2First, lastName }
+ *                       or null if not a coupled name
+ */
+function parseCoupledName(realName) {
+  var match = realName.trim().match(/^(\S+)\s+(?:&|and)\s+(\S+)\s+(.+)$/i);
+  if (!match) return null;
+  return {
+    person1First: match[1],
+    person2First: match[2],
+    lastName: match[3],
+    person1Full: match[1] + " " + match[3],
+    person2Full: match[2] + " " + match[3]
+  };
 }
 
 /**
@@ -143,13 +184,22 @@ function generateOrgPseudonym(realName, existingMappings) {
 /**
  * Generate a pseudonym email based on a person or org pseudonym.
  * "S. Jasper" → "s.jasper@example.com"
+ * "D. & R. Kendall" → "d.kendall@example.com" (uses first person)
  * "Magnolia" → "magnolia@example.com"
  *
  * @param {string} pseudonym - The already-generated pseudonym for this entity
  * @return {string} A fake email address
  */
 function generateEmailPseudonym(pseudonym) {
-  var cleaned = pseudonym
+  var base = pseudonym;
+
+  // For coupled pseudonyms ("D. & R. Kendall"), use just the first person
+  var coupleMatch = base.match(/^([A-Z])\.\s*&\s*[A-Z]\.\s*(.+)$/);
+  if (coupleMatch) {
+    base = coupleMatch[1] + ". " + coupleMatch[2]; // "D. Kendall"
+  }
+
+  var cleaned = base
     .replace(/\.\s+/g, ".")   // "S. Jasper" → "S.Jasper"
     .replace(/\s+/g, ".")      // spaces → dots
     .replace(/[^a-zA-Z0-9.]/g, "") // remove special chars

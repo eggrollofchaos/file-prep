@@ -54,33 +54,52 @@
       align-items: center;
       padding: 6px 0;
       border-bottom: 1px solid #f1f3f4;
+      gap: 4px;
+      flex-wrap: wrap;
     }
     .field-item:last-child { border-bottom: none; }
-    .field-item label {
+    .field-item .field-name {
+      font-weight: 500;
       flex: 1;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      gap: 8px;
+      min-width: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    .field-item .field-name { font-weight: 500; }
     .field-item .field-range {
       font-size: 11px;
-      color: #5f6368;
+      color: #202124;
       font-family: 'Roboto Mono', monospace;
+      border: 1px solid #dadce0;
+      border-radius: 3px;
+      padding: 2px 5px;
+      width: 72px;
+      background: #fff;
+      outline: none;
     }
-    .field-item .field-type {
+    .field-item .field-range:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 1px rgba(26,115,232,0.15);
+    }
+    .field-type-select {
       font-size: 10px;
       color: #fff;
       background: #5f6368;
       border-radius: 3px;
-      padding: 1px 5px;
-      margin-left: auto;
+      padding: 2px 4px;
+      margin-left: 4px;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      flex: none;
+      width: 56px;
     }
-    .field-type.name { background: #1a73e8; }
-    .field-type.email { background: #ea4335; }
-    .field-type.phone { background: #34a853; }
-    .field-type.org { background: #fbbc04; color: #202124; }
+    .field-type-select.name { background: #1a73e8; }
+    .field-type-select.email { background: #ea4335; }
+    .field-type-select.phone { background: #34a853; }
+    .field-type-select.org { background: #fbbc04; color: #202124; }
+    .field-type-select.freetext { background: #9334e6; }
+    .field-type-select option { background: #fff; color: #202124; }
 
     /* ─── Manual range input ─── */
     .range-input-group {
@@ -266,6 +285,7 @@
             <option value="org">Org</option>
             <option value="email">Email</option>
             <option value="phone">Phone</option>
+            <option value="freetext">Freetext</option>
           </select>
         </div>
         <button class="btn btn-text" onclick="addCustomRange()">+ Add range</button>
@@ -375,19 +395,32 @@
         return;
       }
 
+      var types = ['name', 'org', 'email', 'phone', 'freetext'];
       var html = '<ul class="field-list">';
       detectedFields.forEach(function(f, idx) {
+        // Build type selector
+        var typeOptions = '';
+        types.forEach(function(t) {
+          typeOptions += '<option value="' + t + '"' + (t === f.fieldType ? ' selected' : '') + '>' + t + '</option>';
+        });
+
         html += '<li class="field-item">'
-          + '<label>'
-          + '<input type="checkbox" checked data-idx="' + idx + '"> '
-          + '<span class="field-name">' + escapeHtml(f.header) + '</span>'
-          + '<span class="field-range">' + f.range + '</span>'
+          + '<label style="flex:none;margin-right:4px">'
+          + '<input type="checkbox" checked data-idx="' + idx + '">'
           + '</label>'
-          + '<span class="field-type ' + f.fieldType + '">' + f.fieldType + '</span>'
+          + '<span class="field-name">' + escapeHtml(f.header) + '</span>'
+          + '<input type="text" class="field-range" data-idx="' + idx + '" value="' + escapeHtml(f.range) + '">'
+          + '<select class="field-type-select ' + f.fieldType + '" data-idx="' + idx + '" onchange="updateTypeColor(this)">'
+          + typeOptions
+          + '</select>'
           + '</li>';
       });
       html += '</ul>';
       container.innerHTML = html;
+    }
+
+    function updateTypeColor(selectEl) {
+      selectEl.className = 'field-type-select ' + selectEl.value;
     }
 
     // ─── Sheets: Custom Ranges ───
@@ -528,17 +561,21 @@
     }
 
     function protectSheet(domain) {
-      // Collect checked detected fields
+      // Collect checked detected fields, reading edited range/type values from inputs
       var ranges = [];
       var fieldTypes = {};
 
       var checkboxes = document.querySelectorAll('#fieldList input[type="checkbox"]:checked');
       checkboxes.forEach(function(cb) {
         var idx = parseInt(cb.dataset.idx);
-        var f = detectedFields[idx];
-        if (f) {
-          ranges.push(f.range);
-          fieldTypes[f.range] = f.fieldType;
+        // Read the (possibly edited) range from the input field
+        var rangeInput = document.querySelector('#fieldList input.field-range[data-idx="' + idx + '"]');
+        var typeSelect = document.querySelector('#fieldList select.field-type-select[data-idx="' + idx + '"]');
+        var range = rangeInput ? rangeInput.value.trim() : (detectedFields[idx] ? detectedFields[idx].range : '');
+        var type = typeSelect ? typeSelect.value : (detectedFields[idx] ? detectedFields[idx].fieldType : 'name');
+        if (range) {
+          ranges.push(range);
+          fieldTypes[range] = type;
         }
       });
 
