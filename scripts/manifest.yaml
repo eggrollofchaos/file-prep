@@ -1,0 +1,170 @@
+schema-version: 1
+scripts:
+  scripts/allocate_id.py:
+    title: Allocate Id
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/build_agents_mirror.py:
+    title: Build Agents Mirror
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_agents_rules_cap.py:
+    title: Check Agents Rules Cap
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_branch_base.py:
+    title: Check Branch Base
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_doctrine_grounding.py:
+    title: Check Doctrine Grounding
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_doctrine_mirror.py:
+    title: Check Doctrine Mirror
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_kb_frontmatter.py:
+    title: Check Kb Frontmatter
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_main_push.py:
+    title: Check Main Push
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_mirror_equality.py:
+    title: Check Mirror Equality
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_pm_format.py:
+    title: Check Pm Format
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_pr_scope.py:
+    title: Check Pr Scope
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_skill_frontmatter.py:
+    title: Check Skill Frontmatter
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/check_tiny_commit.py:
+    title: Check Tiny Commit
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/compact_logs.py:
+    title: Compact Logs
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/pm_audit.py:
+    title: Pm Audit
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/repo_map:
+    title: Repo Map
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/review_scope_guard.py:
+    title: Review Scope Guard
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/scan_errors.py:
+    title: Scan Errors
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/sprint_project_root.py:
+    title: Sprint Project Root
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/summarize_json.py:
+    title: Summarize Json
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
+  scripts/sync_cgcignore.py:
+    title: Sync Cgcignore
+    type: script
+    status: live
+    owner: Wei Alexander Xin
+    scope: project
+    project: file-prep
+    work-items: [WORK-AGT-492]
